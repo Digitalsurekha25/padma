@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Om Namo - European Roulette Analyzer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Om Namo - European Roulette Analyzer</h1>
+
+    <div class="container">
+        <div class="input-section">
+            <h2>Enter Result</h2>
+            <input type="number" id="numberInput" min="0" max="36">
+            <button id="addNumberBtn">Add Number</button>
+            <button id="resetBtn">Reset Results</button>
+        </div>
+
+        <div class="results-section">
+            <h2>Results Log</h2>
+            <ul id="resultsList">
+                <!-- Results will be populated here by JavaScript -->
+            </ul>
+        </div>
+
+        <div class="visuals-section">
+            <h2>Visuals</h2>
+            <div class="visual-placeholder">
+                    <p>European Roulette Wheel</p>
+                    <img id="rouletteWheelImg" src="roulette_wheel.png" alt="Roulette Wheel" style="max-width: 300px;">
+            </div>
+            <div class="visual-placeholder">
+                    <p>European Roulette Table</p>
+                    <img id="rouletteTableImg" src="roulette_table.png" alt="Roulette Table" style="max-width: 400px;">
+            </div>
+        </div>
+
+        <div class="analysis-section">
+            <h2>Analysis</h2>
+            <div id="latestNumberAnalysis">
+                <!-- Analysis of the latest number will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

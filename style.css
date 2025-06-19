@@ -1,0 +1,105 @@
+body {
+    font-family: sans-serif;
+    margin: 20px;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.container {
+    display: grid;
+    grid-template-areas:
+        "input visuals"
+        "results visuals"
+        "analysis analysis";
+    grid-gap: 20px;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h1, h2 {
+    color: #555;
+}
+
+.input-section, .results-section, .visuals-section, .analysis-section {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.input-section {
+    grid-area: input;
+}
+
+.results-section {
+    grid-area: results;
+}
+
+.visuals-section {
+    grid-area: visuals;
+    text-align: center;
+}
+
+.analysis-section {
+    grid-area: analysis;
+}
+
+#numberInput {
+    padding: 8px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 60px;
+}
+
+button {
+    padding: 8px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+#resetBtn {
+    background-color: #dc3545;
+}
+
+#resetBtn:hover {
+    background-color: #c82333;
+}
+
+#resultsList {
+    list-style-type: none;
+    padding: 0;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#resultsList li {
+    padding: 5px;
+    border-bottom: 1px solid #eee;
+}
+
+#resultsList li:last-child {
+    border-bottom: none;
+}
+
+.visual-placeholder p {
+    color: #888;
+    font-style: italic;
+}
+
+/* Basic styling for analysis display */
+#latestNumberAnalysis p {
+    margin: 5px 0;
+}
+#latestNumberAnalysis strong {
+    color: #333;
+}
