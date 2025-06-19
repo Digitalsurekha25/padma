@@ -21,6 +21,15 @@ body {
 h1, h2 {
     color: #555;
 }
+/* General H3 styling */
+h3 {
+    margin-top: 20px; /* Add some space above H3s */
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 5px;
+    color: #444;
+}
+
 
 .input-section, .results-section, .visuals-section, .analysis-section {
     padding: 15px;
@@ -100,8 +109,8 @@ button:hover {
 #latestNumberAnalysis p {
     margin: 5px 0;
 }
-#latestNumberAnalysis strong {
-    color: #333;
+#latestNumberAnalysis strong { /* This is for the number itself inside the "Analysis for X" */
+    /* color: #333; */ /* Covered by p:first-child strong below */
 }
 
 /* General styling for each analysis module/box */
@@ -118,7 +127,7 @@ button:hover {
 
 /* Styling for the H4 titles of each main analysis box */
 .analysis-section > div[id$="Analysis"] > h4,
-.analysis-section #latestNumberAnalysis > p:first-child /* Assuming title-like structure */ {
+.analysis-section #latestNumberAnalysis > h4 /* For the updated H4 in latestNumberAnalysis */ {
     margin-top: 0;
     margin-bottom: 10px;
     font-size: 1.1em;
@@ -126,7 +135,7 @@ button:hover {
     border-bottom: 1px solid #ddd;
     padding-bottom: 5px;
 }
-/* Specific for latestNumberAnalysis if it doesn't have an H4 */
+/* Specific for latestNumberAnalysis if it doesn't have an H4 - now it does */
 .analysis-section #latestNumberAnalysis {
     /* This already gets box styling from the rule above */
 }
@@ -146,26 +155,32 @@ button:hover {
     font-size: 0.9em;
 }
 
-/* Styling for lists within analysis sections */
-.analysis-section .content ul {
-    list-style-type: none; /* Already set inline, but good to have in CSS */
-    padding-left: 0;      /* Remove default padding */
+/* Styling for lists within analysis sections (statistical ones) */
+.analysis-section > div[id$="Analysis"] .content ul,
+.analysis-section .repeaters-section .content ul,
+.analysis-section .sleepers-section .content ul {
+    list-style-type: none;
+    padding-left: 0;
     margin-top: 5px;
     margin-bottom: 5px;
-    max-height: 150px;    /* Consistent max height */
-    overflow-y: auto;     /* Consistent scroll */
-    border: 1px solid #eee; /* From inline, can be here */
-    padding: 8px;           /* Padding inside the scroll box */
-    background-color: #fff; /* White background for list area */
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    padding: 8px;
+    background-color: #fff;
     border-radius: 3px;
 }
 
-.analysis-section .content ul li {
-    padding: 3px 5px; /* Padding for each list item */
-    border-bottom: 1px dotted #f0f0f0; /* Subtle separator for list items */
+.analysis-section > div[id$="Analysis"] .content ul li,
+.analysis-section .repeaters-section .content ul li,
+.analysis-section .sleepers-section .content ul li {
+    padding: 3px 5px;
+    border-bottom: 1px dotted #f0f0f0;
 }
 
-.analysis-section .content ul li:last-child {
+.analysis-section > div[id$="Analysis"] .content ul li:last-child,
+.analysis-section .repeaters-section .content ul li:last-child,
+.analysis-section .sleepers-section .content ul li:last-child {
     border-bottom: none;
 }
 
@@ -177,20 +192,92 @@ button:hover {
     border-left: 3px solid green;
 }
 
-/* Clearer message styling for "no data", etc. */
-.analysis-section .content p:not([style*="color: green"]) {
+/* Clearer message styling for "no data", etc. in statistical sections */
+.analysis-section > div[id$="Analysis"] .content p:not([style*="color: green"]),
+.analysis-section .repeaters-section .content p:not([style*="color: green"]),
+.analysis-section .sleepers-section .content p:not([style*="color: green"]) {
     font-style: italic;
     color: #666;
     padding: 5px;
 }
 
-/* Ensure latestNumberAnalysis paragraphs also get styled if they act as content */
-.analysis-section #latestNumberAnalysis p:not(:first-child) {
-    font-size: 0.9em; /* Match .content font-size */
-    padding: 3px 0;   /* Some padding */
+/* Styling for #latestNumberAnalysis content (wheel groups) */
+.analysis-section #latestNumberAnalysis .content p {
+    font-size: 0.9em;
+    padding: 3px 0;
+    margin: 2px 0; /* Tighter margin for these specific paragraphs */
+    color: #333; /* Ensure text color if not inherited properly */
+}
+.analysis-section #latestNumberAnalysis .content p strong{
+    color: #111; /* Darker for the number itself */
 }
 
-.analysis-section #latestNumberAnalysis p:first-child strong { /* The "Analysis for X:" part */
-    font-size: 1.1em; /* Match H4 font-size */
-    color: #333;
+
+/* --- Styles for Table Group Analysis --- */
+
+/* Styling for the main container of table group analysis */
+#tableGroupAnalysisContainer {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f0f8ff; /* A slightly different background, e.g., AliceBlue */
+    border: 1px solid #d1e0ff;
+    border-radius: 4px;
+}
+
+/* Styling for sub-sections like basicPropsAnalysis and positionalPropsAnalysis */
+#basicPropsAnalysis,
+#positionalPropsAnalysis {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #fdfdff; /* Slightly lighter than container */
+    border: 1px solid #e8effa;
+    border-radius: 3px;
+}
+
+#basicPropsAnalysis:first-child,
+#positionalPropsAnalysis:first-child {
+    margin-top: 0; /* First sub-section doesn't need top margin */
+}
+
+#tableGroupAnalysisContainer h4 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 1.05em; /* Slightly smaller than main analysis H4s */
+    color: #3a3a5c; /* A thematic color */
+    border-bottom: 1px solid #dde;
+    padding-bottom: 4px;
+}
+
+/* Styling for the lists within basicProps and positionalProps */
+#basicPropsAnalysis .content ul,
+#positionalPropsAnalysis .content ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    /* No border/bg for these lists, just plain text on section background */
+}
+
+#basicPropsAnalysis .content ul li,
+#positionalPropsAnalysis .content ul li {
+    padding: 4px 0; /* Vertical padding for list items */
+    border-bottom: 1px dashed #f0f0f5; /* Lighter dashed border */
+}
+
+#basicPropsAnalysis .content ul li:last-child,
+#positionalPropsAnalysis .content ul li:last-child {
+    border-bottom: none;
+}
+
+/* Ensure .content div within these sections has some padding if not already inherited */
+#basicPropsAnalysis .content,
+#positionalPropsAnalysis .content {
+    padding-left: 5px; /* Small indent for content under H4 */
+}
+/* Message styling within table group analysis */
+#tableGroupAnalysisContainer .content { /* General content text if not a list */
+    font-style: italic;
+    color: #666;
+    padding: 5px;
 }

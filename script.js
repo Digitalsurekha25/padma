@@ -8,7 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const hotColdDiv = document.getElementById('hotColdAnalysis');
     const lastSeenDiv = document.getElementById('lastSeenAnalysis');
     const repeaterSleepersDiv = document.getElementById('repeaterSleepersAnalysis');
-    const distanceAnalysisDiv = document.getElementById('distanceAnalysis'); // Add this selector
+    const distanceAnalysisDiv = document.getElementById('distanceAnalysis');
+    const basicPropsDiv = document.getElementById('basicPropsAnalysis'); // Add this selector
+    const positionalPropsDiv = document.getElementById('positionalPropsAnalysis'); // Add this selector
 
     let results = [];
     let numberCounts = {}; // Declare here
@@ -19,6 +21,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const HOT_COUNT = 3;       // Display top 3 hot numbers
     const COLD_COUNT = 3;      // Display bottom 3 cold numbers (or numbers not seen)
     const SLEEPER_THRESHOLD = 35; // Example: A number is a sleeper if not seen in 35 spins.
+
+    // Table-Based Groupings Definitions
+    const RED_NUMBERS = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+    const BLACK_NUMBERS = [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35];
+
+    const DOZENS = {
+        '1st Dozen': { min: 1, max: 12, numbers: Array.from({length: 12}, (_, i) => i + 1) },
+        '2nd Dozen': { min: 13, max: 24, numbers: Array.from({length: 12}, (_, i) => i + 13) },
+        '3rd Dozen': { min: 25, max: 36, numbers: Array.from({length: 12}, (_, i) => i + 25) }
+    };
+
+    const COLUMNS = {
+        'Column 1': [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34],
+        'Column 2': [2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35],
+        'Column 3': [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36]
+    };
+
+    const HIGH_LOW = {
+        'Low': { min: 1, max: 18 },
+        'High': { min: 19, max: 36 }
+    };
+    // Even/Odd will be calculated directly: num % 2 === 0 (for num > 0)
+    // Number 0 is generally not included in these main categories.
 
     const WHEEL_NUMBERS = {
         'Voisins du Zéro': [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25], // Corrected Voisins
@@ -96,7 +121,8 @@ document.addEventListener('DOMContentLoaded', () => {
         updateLastSeenDisplay();
         updateRepeatersAnalysis();
         updateSleepersAnalysis();
-        updateDistanceAnalysis(); // Add this call
+        updateDistanceAnalysis();
+        updateTableGroupAnalysis(number); // Pass the newly added number
         numberInput.value = '';
         numberInput.focus();
     }
@@ -128,7 +154,8 @@ document.addEventListener('DOMContentLoaded', () => {
             updateLastSeenDisplay();
             updateRepeatersAnalysis();
             updateSleepersAnalysis();
-            updateDistanceAnalysis(); // Add this call
+            updateDistanceAnalysis();
+            updateTableGroupAnalysis(null); // To clear the display
 
             localStorage.removeItem('rouletteResults');
         }
@@ -173,7 +200,116 @@ document.addEventListener('DOMContentLoaded', () => {
         updateLastSeenDisplay();
         updateRepeatersAnalysis();
         updateSleepersAnalysis();
-        updateDistanceAnalysis(); // Called here
+        updateDistanceAnalysis();
+        if (results.length > 0) {
+            updateTableGroupAnalysis(results[results.length - 1]); // Analyze last loaded number
+        } else {
+            updateTableGroupAnalysis(null); // Clear if no results
+        }
+    }
+
+    function updateTableGroupAnalysis(num) {
+        // Clear previous content in basicPropsDiv and positionalPropsDiv
+        // Ensure H4 titles are preserved
+        let basicContent = basicPropsDiv.querySelector('.content');
+        if (!basicContent) {
+            basicContent = document.createElement('div');
+            basicContent.className = 'content';
+            const h4 = basicPropsDiv.querySelector('h4');
+            if (h4 && h4.nextSibling) basicPropsDiv.insertBefore(basicContent, h4.nextSibling);
+            else if (h4) basicPropsDiv.appendChild(basicContent);
+            else basicPropsDiv.appendChild(basicContent);
+        }
+        basicContent.innerHTML = '';
+
+        let positionalContent = positionalPropsDiv.querySelector('.content');
+        if (!positionalContent) {
+            positionalContent = document.createElement('div');
+            positionalContent.className = 'content';
+            const h4 = positionalPropsDiv.querySelector('h4');
+            if (h4 && h4.nextSibling) positionalPropsDiv.insertBefore(positionalContent, h4.nextSibling);
+            else if (h4) positionalPropsDiv.appendChild(positionalContent);
+            else positionalPropsDiv.appendChild(positionalContent);
+        }
+        positionalContent.innerHTML = '';
+
+        if (results.length === 0 && num === null) { // Explicitly checking num === null for reset/initial clear
+            basicContent.textContent = 'No number selected for analysis.';
+            positionalContent.textContent = 'No number selected for analysis.';
+            return;
+        }
+
+        const currentNumber = (typeof num === 'number') ? num : (results.length > 0 ? results[results.length -1] : null);
+        if (currentNumber === null) { // Handles cases where results might be empty but num wasn't explicitly null
+             basicContent.textContent = 'No number available for analysis.';
+            positionalContent.textContent = 'No number available for analysis.';
+            return;
+        }
+
+        // --- Basic Properties ---
+        const propsList = document.createElement('ul');
+        propsList.style.paddingLeft = '0'; propsList.style.listStyleType = 'none';
+
+        // Even/Odd
+        let evenOddText = 'N/A (0)';
+        if (currentNumber > 0) {
+            evenOddText = (currentNumber % 2 === 0) ? 'Even' : 'Odd';
+        }
+        const eoLi = document.createElement('li');
+        eoLi.textContent = `Even/Odd: ${evenOddText}`;
+        propsList.appendChild(eoLi);
+
+        // Red/Black
+        let colorText = 'Green (0)'; // Or just N/A for 0
+        if (RED_NUMBERS.includes(currentNumber)) {
+            colorText = 'Red';
+        } else if (BLACK_NUMBERS.includes(currentNumber)) {
+            colorText = 'Black';
+        }
+        const rbLi = document.createElement('li');
+        rbLi.textContent = `Color: ${colorText}`;
+        propsList.appendChild(rbLi);
+
+        // High/Low
+        let highLowText = 'N/A (0)';
+        if (currentNumber >= HIGH_LOW.Low.min && currentNumber <= HIGH_LOW.Low.max) {
+            highLowText = 'Low (1-18)';
+        } else if (currentNumber >= HIGH_LOW.High.min && currentNumber <= HIGH_LOW.High.max) {
+            highLowText = 'High (19-36)';
+        }
+        const hlLi = document.createElement('li');
+        hlLi.textContent = `Range: ${highLowText}`;
+        propsList.appendChild(hlLi);
+        basicContent.appendChild(propsList);
+
+        // --- Positional Properties ---
+        const posList = document.createElement('ul');
+        posList.style.paddingLeft = '0'; posList.style.listStyleType = 'none';
+
+        // Dozen
+        let dozenText = 'N/A (0)';
+        for (const dozenName in DOZENS) {
+            if (currentNumber >= DOZENS[dozenName].min && currentNumber <= DOZENS[dozenName].max) {
+                dozenText = dozenName;
+                break;
+            }
+        }
+        const dozLi = document.createElement('li');
+        dozLi.textContent = `Dozen: ${dozenText}`;
+        posList.appendChild(dozLi);
+
+        // Column
+        let columnText = 'N/A (0)';
+        for (const colName in COLUMNS) {
+            if (COLUMNS[colName].includes(currentNumber)) {
+                columnText = colName;
+                break;
+            }
+        }
+        const colLi = document.createElement('li');
+        colLi.textContent = `Column: ${columnText}`;
+        posList.appendChild(colLi);
+        positionalContent.appendChild(posList);
     }
 
     function updateDistanceAnalysis() {
