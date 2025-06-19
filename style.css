@@ -340,6 +340,65 @@ button:hover {
     margin-top: 0;
 }
 
+/* --- Styles for Table Cluster Trends & Analysis --- */
+#tableClusterTrendsAnalysisContainer {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f5f5dc; /* Beige - distinct from other main containers */
+    border: 1px solid #e0e0c0;
+    border-radius: 4px;
+}
+
+#tableClusterTrendsAnalysisContainer > div[id$="Display"] { /* Targets direct children ending in "Display" */
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #fafaf0; /* Linen or LightYellow - slightly lighter */
+    border: 1px solid #f0f0e0;
+    border-radius: 3px;
+}
+
+#tableClusterTrendsAnalysisContainer > div[id$="Display"]:first-of-type {
+    margin-top: 0; /* First sub-section has no top margin */
+}
+
+#tableClusterTrendsAnalysisContainer h5 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 1.0em;
+    color: #6b5b23; /* A thematic color for table clusters */
+    border-bottom: 1px solid #e0d8c0;
+    padding-bottom: 4px;
+}
+
+#tableClusterTrendsAnalysisContainer .content ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+}
+
+#tableClusterTrendsAnalysisContainer .content ul li {
+    padding: 3px 0;
+    border-bottom: 1px dashed #f0ede0;
+}
+
+#tableClusterTrendsAnalysisContainer .content ul li:last-child {
+    border-bottom: none;
+}
+
+#tableClusterTrendsAnalysisContainer .content ul li strong { /* For streak highlights */
+    color: #504010;
+}
+
+#tableClusterTrendsAnalysisContainer .content p { /* For any plain text like "No data..." */
+    font-size: 0.9em;
+    margin: 5px 0;
+    padding: 3px 0;
+    font-style: italic;
+    color: #777;
+}
+
 
 /* Basic CSS for highlighting elements within the SVG wheel */
 .highlighted-svg-number {
