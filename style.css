@@ -103,3 +103,94 @@ button:hover {
 #latestNumberAnalysis strong {
     color: #333;
 }
+
+/* General styling for each analysis module/box */
+.analysis-section > div[id$="Analysis"], /* Targets main analysis divs like hitFrequencyAnalysis */
+.analysis-section .repeaters-section,
+.analysis-section .sleepers-section,
+.analysis-section #latestNumberAnalysis /* Ensure the first analysis box also gets this styling */ {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+}
+
+/* Styling for the H4 titles of each main analysis box */
+.analysis-section > div[id$="Analysis"] > h4,
+.analysis-section #latestNumberAnalysis > p:first-child /* Assuming title-like structure */ {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: #333;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+/* Specific for latestNumberAnalysis if it doesn't have an H4 */
+.analysis-section #latestNumberAnalysis {
+    /* This already gets box styling from the rule above */
+}
+
+
+/* Styling for H5 sub-titles (e.g., Repeaters, Sleepers) */
+.analysis-section h5 { /* General for H5, or use specific classes if created */
+    margin-top: 5px;
+    margin-bottom: 8px;
+    font-size: 1em;
+    color: #444;
+}
+
+/* Styling for the content wrapper div inside each module */
+.analysis-section .content {
+    padding: 5px;
+    font-size: 0.9em;
+}
+
+/* Styling for lists within analysis sections */
+.analysis-section .content ul {
+    list-style-type: none; /* Already set inline, but good to have in CSS */
+    padding-left: 0;      /* Remove default padding */
+    margin-top: 5px;
+    margin-bottom: 5px;
+    max-height: 150px;    /* Consistent max height */
+    overflow-y: auto;     /* Consistent scroll */
+    border: 1px solid #eee; /* From inline, can be here */
+    padding: 8px;           /* Padding inside the scroll box */
+    background-color: #fff; /* White background for list area */
+    border-radius: 3px;
+}
+
+.analysis-section .content ul li {
+    padding: 3px 5px; /* Padding for each list item */
+    border-bottom: 1px dotted #f0f0f0; /* Subtle separator for list items */
+}
+
+.analysis-section .content ul li:last-child {
+    border-bottom: none;
+}
+
+/* Specific styling for highlighted repeater messages */
+.analysis-section .content p[style*="color: green"] { /* It's better to use classes */
+    font-weight: bold;
+    padding: 5px;
+    background-color: #e6ffed; /* Light green background */
+    border-left: 3px solid green;
+}
+
+/* Clearer message styling for "no data", etc. */
+.analysis-section .content p:not([style*="color: green"]) {
+    font-style: italic;
+    color: #666;
+    padding: 5px;
+}
+
+/* Ensure latestNumberAnalysis paragraphs also get styled if they act as content */
+.analysis-section #latestNumberAnalysis p:not(:first-child) {
+    font-size: 0.9em; /* Match .content font-size */
+    padding: 3px 0;   /* Some padding */
+}
+
+.analysis-section #latestNumberAnalysis p:first-child strong { /* The "Analysis for X:" part */
+    font-size: 1.1em; /* Match H4 font-size */
+    color: #333;
+}
