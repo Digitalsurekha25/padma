@@ -72,11 +72,10 @@
                 <!-- ... content ... -->
             </div>
             <div id="distanceAnalysis">
-                <h4>Distance Between Hits (Gaps)</h4>
+                <h4>Distance Between Hits (Gaps - Same Number)</h4>
                 <!-- ... content ... -->
             </div>
 
-            <!-- NEW SECTION FOR TABLE-BASED GROUPINGS -->
             <h3>Table Group Analysis (Last Spin)</h3>
             <div id="tableGroupAnalysisContainer">
                 <div id="basicPropsAnalysis">
@@ -88,10 +87,32 @@
                     <!-- Content for Dozens, Columns -->
                 </div>
 
-                <!-- NEW SUB-SECTION for Streets, Lines, Quads, Finales -->
                 <div id="advancedTablePropsAnalysis">
                     <h4>Advanced Table Properties</h4>
-                    <!-- Content for Streets, Lines, Quads, Finales will be populated here by JS -->
+                    <!-- ... content ... --> <!-- Corrected placeholder -->
+                </div>
+            </div>
+
+            <!-- NEW SECTION FOR WHEEL CLUSTER ANALYSIS -->
+            <h3>Wheel Cluster Analysis</h3>
+            <div id="wheelClusterAnalysisContainer">
+                <div id="neighborAnalysisDisplay"> <!-- For updateNeighborAnalysisDisplay -->
+                    <h5>Neighboring Numbers (on Wheel)</h5>
+                    <div class="content">
+                        <!-- Content for ±1, ±2 neighbors will go here -->
+                    </div>
+                </div>
+                <div id="wheelDistanceDisplay"> <!-- For updateWheelDistanceDisplay -->
+                    <h5>Wheel Distance & Direction (Last Two Spins)</h5>
+                    <div class="content">
+                        <!-- Content for CW/CCW distance between last two hits -->
+                    </div>
+                </div>
+                <div id="sectorMovementDisplay"> <!-- For updateSectorMovementDisplay -->
+                    <h5>Sector Movement & Hot Zones</h5>
+                    <div class="content">
+                        <!-- Content for consecutive sector hits, sector frequencies, recency -->
+                    </div>
                 </div>
             </div>
         </div>

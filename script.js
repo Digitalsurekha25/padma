@@ -12,7 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const basicPropsDiv = document.getElementById('basicPropsAnalysis');
     const positionalPropsDiv = document.getElementById('positionalPropsAnalysis');
     const advancedTablePropsDiv = document.getElementById('advancedTablePropsAnalysis');
-    const rouletteWheelSvgContainer = document.getElementById('rouletteWheelSvgContainer'); // Add this selector
+    const rouletteWheelSvgContainer = document.getElementById('rouletteWheelSvgContainer');
+    const neighborAnalysisDisplayDiv = document.getElementById('neighborAnalysisDisplay'); // Add this selector
+    const wheelDistanceDisplayDiv = document.getElementById('wheelDistanceDisplay'); // Add this selector
+    const sectorMovementDisplayDiv = document.getElementById('sectorMovementDisplay'); // Add this selector
+
 
     let results = [];
     let numberCounts = {}; // Declare here
@@ -53,6 +57,255 @@ document.addEventListener('DOMContentLoaded', () => {
         23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28,
         12, 35, 3, 26
     ];
+
+    const WHEEL_NUMBER_TO_INDEX_MAP = new Map();
+    EUROPEAN_WHEEL_ORDER.forEach((number, index) => {
+        WHEEL_NUMBER_TO_INDEX_MAP.set(number, index);
+    });
+
+    // Potential future storage for wheel cluster patterns, e.g.:
+    // let wheelGapsHistory = [];
+    // let neighborHitStats = {};
+    // For now, most wheel cluster analysis will be calculated on-the-fly or
+    // update simple stats directly in display functions.
+
+    let sectorHitCounts = {};
+    let sectorLastSeenSpin = {};
+    let currentConsecutiveSector = { name: null, count: 0 };
+
+    function initializeSectorStats() {
+        sectorHitCounts = {};
+        sectorLastSeenSpin = {};
+        currentConsecutiveSector = { name: null, count: 0 };
+        for (const sectorName in WHEEL_NUMBERS) { // WHEEL_NUMBERS from earlier step
+            sectorHitCounts[sectorName] = 0;
+            sectorLastSeenSpin[sectorName] = -1; // -1 means not seen yet
+        }
+    }
+    // Call this in DOMContentLoaded after WHEEL_NUMBERS is defined
+    // initializeSectorStats(); // Will be called after WHEEL_NUMBERS definition
+
+
+    function calculateWheelDistance(prevNum, currentNum) {
+        if (prevNum === null || currentNum === null ||
+            !WHEEL_NUMBER_TO_INDEX_MAP.has(prevNum) ||
+            !WHEEL_NUMBER_TO_INDEX_MAP.has(currentNum)) {
+            return { distance: null, direction: 'N/A' };
+        }
+
+        const prevIndex = WHEEL_NUMBER_TO_INDEX_MAP.get(prevNum);
+        const currentIndex = WHEEL_NUMBER_TO_INDEX_MAP.get(currentNum);
+        const wheelSize = EUROPEAN_WHEEL_ORDER.length;
+
+        let diff = currentIndex - prevIndex;
+
+        // Shortest path
+        if (Math.abs(diff) > wheelSize / 2) {
+            if (diff > 0) {
+                diff = diff - wheelSize; // Go counter-clockwise (negative)
+            } else {
+                diff = diff + wheelSize; // Go clockwise (positive)
+            }
+        }
+
+        let direction = '';
+        if (diff > 0) direction = 'CW';
+        else if (diff < 0) direction = 'CCW';
+        else direction = 'Same Number'; // diff is 0
+
+        return {
+            distance: Math.abs(diff), // Number of pockets moved
+            direction: direction,
+            signedDistance: diff // Raw difference, positive for CW, negative for CCW via shortest path
+        };
+    }
+
+    // Placeholder for the actual DOM element (now using the selected one)
+    // let wheelDistanceDisplayDiv = null;
+
+    function updateWheelDistanceDisplay(currentNumber, prevNumber) {
+        const displayDiv = wheelDistanceDisplayDiv;
+        if (!displayDiv) { console.error("wheelDistanceDisplayDiv not found"); return; }
+
+        let contentDiv = displayDiv.querySelector('.content');
+        if (!contentDiv) {
+            console.error("Could not find .content div in wheelDistanceDisplay");
+            // Optionally create it if critical, or ensure HTML structure is correct
+            contentDiv = document.createElement('div');
+            contentDiv.className = 'content';
+            displayDiv.appendChild(contentDiv); // Append if H5 is not strictly required for structure here
+        }
+        contentDiv.innerHTML = ''; // Clear previous content
+
+        if (prevNumber === null || currentNumber === null) {
+            contentDiv.innerHTML = '<p>Not enough data (need at least 2 spins).</p>';
+            return;
+        }
+
+        const result = calculateWheelDistance(prevNumber, currentNumber);
+        const p = document.createElement('p');
+        if (result.distance === null) {
+            p.textContent = "Could not calculate wheel distance (one or both numbers not on wheel?).";
+        } else if (result.direction === 'Same Number') {
+            p.textContent = `Previous: ${prevNumber}, Current: ${currentNumber} (Same Number).`;
+        } else {
+            p.textContent = `From ${prevNumber} to ${currentNumber}: ${result.distance} pockets ${result.direction}.`;
+        }
+        contentDiv.appendChild(p);
+
+        // Future: store result.signedDistance in a history array for pattern analysis.
+        // e.g., wheelGapsHistory.push(result.signedDistance);
+    }
+
+
+    function getWheelNeighbors(centerNumber, maxDistance = 2) {
+        if (centerNumber === null || centerNumber === undefined || !WHEEL_NUMBER_TO_INDEX_MAP.has(centerNumber)) {
+            return {}; // Return empty object or specific structure for no data
+        }
+
+        const centerIndex = WHEEL_NUMBER_TO_INDEX_MAP.get(centerNumber);
+        const wheelSize = EUROPEAN_WHEEL_ORDER.length;
+        const neighbors = {}; // Store as { plus1: num, minus1: num, ... }
+
+        for (let dist = 1; dist <= maxDistance; dist++) {
+            // Clockwise neighbor
+            const cwIndex = (centerIndex + dist) % wheelSize;
+            neighbors[`plus${dist}`] = EUROPEAN_WHEEL_ORDER[cwIndex];
+
+            // Counter-clockwise neighbor
+            const ccwIndex = (centerIndex - dist + wheelSize) % wheelSize;
+            neighbors[`minus${dist}`] = EUROPEAN_WHEEL_ORDER[ccwIndex];
+        }
+        return neighbors; // e.g. { plus1: 32, minus1: 26, plus2: 15, minus2: 3 } for center 0
+    }
+
+    // Placeholder for the actual DOM element (now using the selected one)
+    // let neighborAnalysisDisplayDiv = null;
+
+    function updateNeighborAnalysisDisplay(currentNumber) {
+        const displayDiv = neighborAnalysisDisplayDiv; // Use the selected element
+        if (!displayDiv) { console.error("neighborAnalysisDisplayDiv not found"); return; }
+
+        let contentDiv = displayDiv.querySelector('.content');
+        if (!contentDiv) {
+            console.error("Could not find .content div in neighborAnalysisDisplay");
+            // Fallback: create and append if missing (HTML should be correct though)
+            contentDiv = document.createElement('div');
+            contentDiv.className = 'content';
+            displayDiv.appendChild(contentDiv);
+        }
+        contentDiv.innerHTML = ''; // Clear previous content
+
+        if (currentNumber === null || currentNumber === undefined) {
+            contentDiv.innerHTML = '<p>No number selected for neighbor analysis.</p>';
+            return;
+        }
+
+        const neighbors = getWheelNeighbors(currentNumber, 2); // Get ±1 and ±2 neighbors
+        const ul = document.createElement('ul');
+        ul.style.listStyleType = 'none'; ul.style.paddingLeft = '0';
+
+        if (Object.keys(neighbors).length === 0) {
+            const li = document.createElement('li');
+            li.textContent = 'Could not determine neighbors (number not on wheel?).';
+            ul.appendChild(li);
+        } else {
+            const li1 = document.createElement('li');
+            li1.innerHTML = `<strong>&pm;1:</strong> ${neighbors.minus1} (CCW), ${neighbors.plus1} (CW)`;
+            ul.appendChild(li1);
+            const li2 = document.createElement('li');
+            li2.innerHTML = `<strong>&pm;2:</strong> ${neighbors.minus2} (CCW), ${neighbors.plus2} (CW)`;
+            ul.appendChild(li2);
+        }
+        contentDiv.appendChild(ul);
+    }
+
+    // Placeholder for actual DOM element (now using the selected one)
+    // let sectorMovementDisplayDiv = null;
+
+    function updateSectorMovementDisplay(currentNumber, previousNumber, currentSectors) {
+        const displayDiv = sectorMovementDisplayDiv;
+        if (!displayDiv) { console.error("sectorMovementDisplayDiv not found"); return; }
+
+        let contentDiv = displayDiv.querySelector('.content');
+        if (!contentDiv) {
+            console.error("Could not find .content div in sectorMovementDisplay");
+            contentDiv = document.createElement('div');
+            contentDiv.className = 'content';
+            displayDiv.appendChild(contentDiv);
+        }
+        contentDiv.innerHTML = ''; // Clear previous content
+
+        const outputElements = []; // Array of p or ul elements
+
+        if (currentNumber === null && previousNumber === null) {
+            const p = document.createElement('p');
+            p.textContent = "No data for sector movement analysis.";
+            outputElements.push(p);
+        } else {
+            const pInfo = document.createElement('p');
+            pInfo.textContent = `Analysis for latest number: ${currentNumber !== null ? currentNumber : 'N/A'}`;
+            outputElements.push(pInfo);
+
+            // CW/CCW Movement
+            const pMove = document.createElement('p');
+            if (previousNumber !== null && currentNumber !== null) {
+                const movement = calculateWheelDistance(previousNumber, currentNumber);
+                if (movement.distance !== null && movement.direction !== 'Same Number') {
+                    pMove.textContent = `Movement: ${movement.distance} pockets ${movement.direction} (from ${previousNumber} to ${currentNumber}).`;
+                } else if (movement.direction === 'Same Number') {
+                    pMove.textContent = `Movement: Same number repeated (${currentNumber}).`;
+                } else { pMove.textContent = "Movement: Could not calculate."; }
+            } else if (currentNumber !== null) {
+                pMove.textContent = "Movement: First spin.";
+            } else {
+                pMove.textContent = "Movement: N/A";
+            }
+            outputElements.push(pMove);
+
+            // Consecutive Sector Hits
+            if (currentConsecutiveSector.name && currentConsecutiveSector.count > 1) {
+                const pConsec = document.createElement('p');
+                pConsec.innerHTML = `<strong>Streak:</strong> ${currentConsecutiveSector.count} hits in ${currentConsecutiveSector.name}.`;
+                outputElements.push(pConsec);
+            }
+
+            // Sector Hot Zones
+            const pTitle = document.createElement('p');
+            pTitle.innerHTML = '<strong>Sector Stats:</strong>';
+            outputElements.push(pTitle);
+            const ulHot = document.createElement('ul');
+            ulHot.style.listStyleType = 'none'; ulHot.style.paddingLeft = '0';
+
+            if(results.length > 0) { // Ensure results exist for currentSpinIndex
+                const currentSpinIdx = results.length - 1;
+                const sortedSectors = Object.keys(WHEEL_NUMBERS).sort((a,b) => {
+                    if (sectorHitCounts[b] !== sectorHitCounts[a]) {
+                        return sectorHitCounts[b] - sectorHitCounts[a];
+                    }
+                    return sectorLastSeenSpin[b] - sectorLastSeenSpin[a];
+                });
+
+                sortedSectors.forEach(sectorName => {
+                    let recencyText = "never seen";
+                    if (sectorLastSeenSpin[sectorName] !== -1) {
+                        const spinsAgo = currentSpinIdx - sectorLastSeenSpin[sectorName];
+                        recencyText = spinsAgo === 0 && currentSectors && currentSectors.includes(sectorName) ? "this spin" : `${spinsAgo} spin(s) ago`;
+                    }
+                    const li = document.createElement('li');
+                    li.textContent = `${sectorName}: ${sectorHitCounts[sectorName]} hits (Last: ${recencyText})`;
+                    ulHot.appendChild(li);
+                });
+            } else {
+                 const li = document.createElement('li');
+                 li.textContent = "No results to determine sector stats.";
+                 ulHot.appendChild(li);
+            }
+            outputElements.push(ulHot);
+        }
+        outputElements.forEach(el => contentDiv.appendChild(el));
+    }
+
 
     // Advanced Table-Based Groupings Definitions
 
@@ -162,7 +415,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initializeNumberCounts();
     initializeLastSeen();
-    initializeAppearanceIndexes(); // Initialize on script load
+    initializeAppearanceIndexes();
+    initializeSectorStats(); // Add this call
 
     addNumberBtn.addEventListener('click', addNumber);
     resetBtn.addEventListener('click', resetResults);
@@ -209,7 +463,44 @@ document.addEventListener('DOMContentLoaded', () => {
         updateRepeatersAnalysis();
         updateSleepersAnalysis();
         updateDistanceAnalysis();
-        updateTableGroupAnalysis(number); // Pass the newly added number
+        updateTableGroupAnalysis(number);
+        updateNeighborAnalysisDisplay(number);
+
+        let belongingSectorsForCurrent = [];
+        for (const groupName in WHEEL_NUMBERS) {
+            if (WHEEL_NUMBERS[groupName].includes(number)) {
+                belongingSectorsForCurrent.push(groupName);
+            }
+        }
+
+        belongingSectorsForCurrent.forEach(sectorName => {
+            sectorHitCounts[sectorName]++;
+            sectorLastSeenSpin[sectorName] = results.length - 1;
+        });
+
+        // Update Consecutive Sector Hits (refined logic)
+        let streakContinued = false;
+        if (currentConsecutiveSector.name && belongingSectorsForCurrent.includes(currentConsecutiveSector.name)) {
+            currentConsecutiveSector.count++;
+            streakContinued = true;
+        }
+
+        if (!streakContinued) { // Streak broken or first hit
+            if (belongingSectorsForCurrent.length > 0) {
+                // Start new streak with the first sector found for the current number
+                // (Could be refined if a number is in multiple, e.g. prefer Voisins over Zero Spiel if both match)
+                currentConsecutiveSector.name = belongingSectorsForCurrent[0];
+                currentConsecutiveSector.count = 1;
+            } else { // No sector for current number, so streak ends, no new one starts
+                currentConsecutiveSector.name = null;
+                currentConsecutiveSector.count = 0;
+            }
+        }
+
+        const prevNumber = results.length >= 2 ? results[results.length - 2] : null;
+        updateWheelDistanceDisplay(number, prevNumber);
+        updateSectorMovementDisplay(number, prevNumber, belongingSectorsForCurrent); // New call
+
         numberInput.value = '';
         numberInput.focus();
     }
@@ -230,7 +521,8 @@ document.addEventListener('DOMContentLoaded', () => {
             results = [];
             initializeNumberCounts();
             initializeLastSeen();
-            initializeAppearanceIndexes(); // Add this call
+            initializeAppearanceIndexes();
+            initializeSectorStats(); // Reset stats
 
             renderResults();
             clearAnalysis(); // Clears wheel group analysis
@@ -242,7 +534,10 @@ document.addEventListener('DOMContentLoaded', () => {
             updateRepeatersAnalysis();
             updateSleepersAnalysis();
             updateDistanceAnalysis();
-            updateTableGroupAnalysis(null); // To clear the display
+            updateTableGroupAnalysis(null);
+            updateNeighborAnalysisDisplay(null);
+            updateWheelDistanceDisplay(null, null);
+            updateSectorMovementDisplay(null, null, []); // New call
 
             localStorage.removeItem('rouletteResults');
         }
@@ -259,7 +554,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         initializeNumberCounts();
         initializeLastSeen();
-        initializeAppearanceIndexes(); // Correctly placed
+        initializeAppearanceIndexes();
+        initializeSectorStats(); // Reset before recalculating
 
         if (storedResults) {
             results = JSON.parse(storedResults);
@@ -272,9 +568,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 lastSeenAtSpin[num] = index;
             });
 
-            results.forEach((num, index) => { // Rebuild appearanceIndexes
-                // appearanceIndexes[num] is already an array due to initializeAppearanceIndexes
+            results.forEach((num, index) => {
                 appearanceIndexes[num].push(index);
+            });
+
+            // Recalculate sector stats based on loaded results
+            results.forEach((num, index) => {
+                let belongingSectors = [];
+                for (const groupName in WHEEL_NUMBERS) {
+                    if (WHEEL_NUMBERS[groupName].includes(num)) {
+                        belongingSectors.push(groupName);
+                    }
+                }
+                belongingSectors.forEach(sectorName => {
+                    sectorHitCounts[sectorName]++;
+                    sectorLastSeenSpin[sectorName] = index;
+                });
+
+                // Update consecutive streak based on this num and previous one in results (refined logic)
+                let streakContinued = false;
+                if (currentConsecutiveSector.name && belongingSectors.includes(currentConsecutiveSector.name)) {
+                    currentConsecutiveSector.count++;
+                    streakContinued = true;
+                }
+
+                if (!streakContinued) {
+                    if (belongingSectors.length > 0) {
+                        currentConsecutiveSector.name = belongingSectors[0];
+                        currentConsecutiveSector.count = 1;
+                    } else {
+                        currentConsecutiveSector.name = null;
+                        currentConsecutiveSector.count = 0;
+                    }
+                }
             });
 
             renderResults();
@@ -288,11 +614,31 @@ document.addEventListener('DOMContentLoaded', () => {
         updateRepeatersAnalysis();
         updateSleepersAnalysis();
         updateDistanceAnalysis();
-        if (results.length > 0) {
-            updateTableGroupAnalysis(results[results.length - 1]); // Analyze last loaded number
-        } else {
-            updateTableGroupAnalysis(null); // Clear if no results
+
+        const lastNum = results.length > 0 ? results[results.length - 1] : null;
+        const secondLastNum = results.length >= 2 ? results[results.length - 2] : null;
+        let lastNumSectors = [];
+        if (lastNum !== null) {
+            for (const groupName in WHEEL_NUMBERS) {
+                if (WHEEL_NUMBERS[groupName].includes(lastNum)) {
+                    lastNumSectors.push(groupName);
+                }
+            }
         }
+
+        if (results.length > 0) {
+            updateTableGroupAnalysis(lastNum);
+            updateNeighborAnalysisDisplay(lastNum);
+        } else {
+            updateTableGroupAnalysis(null);
+            updateNeighborAnalysisDisplay(null);
+        }
+        if (results.length >= 2) {
+            updateWheelDistanceDisplay(lastNum, secondLastNum);
+        } else {
+            updateWheelDistanceDisplay(null, null);
+        }
+        updateSectorMovementDisplay(lastNum, secondLastNum, lastNumSectors); // New call
     }
 
     function updateTableGroupAnalysis(num) {
