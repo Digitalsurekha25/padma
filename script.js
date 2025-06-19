@@ -11,7 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const distanceAnalysisDiv = document.getElementById('distanceAnalysis');
     const basicPropsDiv = document.getElementById('basicPropsAnalysis');
     const positionalPropsDiv = document.getElementById('positionalPropsAnalysis');
-    const advancedTablePropsDiv = document.getElementById('advancedTablePropsAnalysis'); // Add this selector
+    const advancedTablePropsDiv = document.getElementById('advancedTablePropsAnalysis');
+    const rouletteWheelSvgContainer = document.getElementById('rouletteWheelSvgContainer'); // Add this selector
 
     let results = [];
     let numberCounts = {}; // Declare here
@@ -45,6 +46,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     // Even/Odd will be calculated directly: num % 2 === 0 (for num > 0)
     // Number 0 is generally not included in these main categories.
+
+    // European Roulette Wheel Sequence (Clockwise)
+    const EUROPEAN_WHEEL_ORDER = [
+        0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8,
+        23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28,
+        12, 35, 3, 26
+    ];
 
     // Advanced Table-Based Groupings Definitions
 
@@ -816,31 +824,77 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function analyzeNumber(number) {
-        latestNumberAnalysisDiv.innerHTML = ''; // Clear previous analysis
+        latestNumberAnalysisDiv.innerHTML = ''; // Clear previous text analysis
 
-        const analysisTitle = document.createElement('p');
-        analysisTitle.innerHTML = `Analysis for <strong>${number}</strong>:`;
-        latestNumberAnalysisDiv.appendChild(analysisTitle);
+        const analysisText = document.createElement('p');
+        analysisText.innerHTML = `Analysis for <strong>${number}</strong> (Wheel Sectors):`;
+        latestNumberAnalysisDiv.appendChild(analysisText);
 
-        let foundInGroup = false;
+        let belongingSectors = []; // Store sectors the number belongs to
+
         for (const groupName in WHEEL_NUMBERS) {
             if (WHEEL_NUMBERS[groupName].includes(number)) {
                 const groupP = document.createElement('p');
                 groupP.textContent = `Belongs to: ${groupName}`;
                 latestNumberAnalysisDiv.appendChild(groupP);
-                foundInGroup = true;
+                belongingSectors.push(groupName); // Add to our list for SVG highlighting
             }
         }
-
-        if (!foundInGroup) {
-            const noGroupP = document.createElement('p');
-            noGroupP.textContent = 'Not part of any major predefined wheel-based group.';
-            latestNumberAnalysisDiv.appendChild(noGroupP);
+        if (belongingSectors.length === 0 && (number !== null && number !== undefined) ) {
+             const noGroupP = document.createElement('p');
+             noGroupP.textContent = 'Not part of any major predefined wheel-based group.';
+             latestNumberAnalysisDiv.appendChild(noGroupP);
+        } else if (number === null || number === undefined) {
+            latestNumberAnalysisDiv.innerHTML = '<p>No number selected for wheel sector analysis.</p>';
         }
+
+
+        // --- SVG Highlighting Logic ---
+        if (rouletteWheelSvgContainer) {
+            // 1. Reset previously highlighted elements
+            const highlightedElements = rouletteWheelSvgContainer.querySelectorAll('.highlighted-svg-number');
+            highlightedElements.forEach(el => {
+                el.classList.remove('highlighted-svg-number');
+                // el.style.fill = ''; // Or reset style directly if not using classes
+            });
+
+            // 2. Highlight numbers in the identified sectors
+            if (belongingSectors.length > 0) {
+                belongingSectors.forEach(sectorName => {
+                    const numbersInSector = WHEEL_NUMBERS[sectorName];
+                    if (numbersInSector) {
+                        numbersInSector.forEach(numInSector => {
+                            // Attempt to find element by expected ID, e.g., "svg-num-15"
+                            const svgElement = rouletteWheelSvgContainer.querySelector(`#svg-num-${numInSector}`);
+                            if (svgElement) {
+                                svgElement.classList.add('highlighted-svg-number');
+                                // svgElement.style.fill = 'orange'; // Or set style directly
+                            }
+                        });
+                    }
+                });
+            } else if (number !== null && number !== undefined) {
+                // If the number itself is not in a major sector, but we want to highlight just that number
+                const svgSingleElement = rouletteWheelSvgContainer.querySelector(`#svg-num-${number}`);
+                if (svgSingleElement) {
+                    svgSingleElement.classList.add('highlighted-svg-number');
+                }
+            }
+        }
+        // --- End of SVG Highlighting Logic ---
     }
 
     function clearAnalysis() {
-        latestNumberAnalysisDiv.innerHTML = '';
+        latestNumberAnalysisDiv.innerHTML = ''; // Clears text analysis
+
+        // Clear SVG highlights as well
+        if (rouletteWheelSvgContainer) {
+            const highlightedElements = rouletteWheelSvgContainer.querySelectorAll('.highlighted-svg-number');
+            highlightedElements.forEach(el => {
+                el.classList.remove('highlighted-svg-number');
+                // el.style.fill = ''; // Reset style if not using classes
+            });
+        }
     }
 
     // Initial calls on page load:

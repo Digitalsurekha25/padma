@@ -27,12 +27,21 @@
         <div class="visuals-section">
             <h2>Visuals</h2>
             <div class="visual-placeholder">
-                    <p>European Roulette Wheel</p>
-                    <img id="rouletteWheelImg" src="roulette_wheel.svg" alt="Roulette Wheel" style="max-width: 300px;">
+                <p>European Roulette Wheel</p>
+                <div id="rouletteWheelSvgContainer" style="max-width: 300px; margin: auto;">
+                    <!--
+                        SVG content for the roulette wheel (roulette_wheel.svg) should be placed here.
+                        For JS interaction, its elements should have IDs like:
+                        - For numbers: "svg-num-0", "svg-num-32", etc.
+                        - For sectors (if grouped in SVG): "svg-sector-voisins", "svg-sector-tiers", etc.
+                        Alternatively, individual number elements can be targeted and colored based on sector.
+                    -->
+                    <p style="color: #888; font-style: italic;">[SVG Wheel Placeholder - A roulette_wheel.svg file with appropriate internal IDs is needed here for visual sector highlighting]</p>
+                </div>
             </div>
-            <div class="visual-placeholder">
-                    <p>European Roulette Table</p>
-                    <img id="rouletteTableImg" src="roulette_table.svg" alt="Roulette Table" style="max-width: 400px;">
+            <div class="visual-placeholder"> <!-- Table placeholder remains an img for now -->
+                <p>European Roulette Table</p>
+                <img id="rouletteTableImg" src="roulette_table.svg" alt="Roulette Table" style="max-width: 400px;">
             </div>
         </div>
 

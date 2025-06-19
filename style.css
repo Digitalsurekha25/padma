@@ -298,3 +298,19 @@ button:hover {
 #tableGroupAnalysisContainer #advancedTablePropsAnalysis .content {
      /* This will apply to the specific content divs if they only contain a text node message */
 }
+
+/* Basic CSS for highlighting elements within the SVG wheel */
+.highlighted-svg-number {
+    fill: orange !important; /* Example: change fill color to orange */
+    stroke: black;          /* Example: add a black stroke */
+    stroke-width: 1px;      /* Example: stroke width */
+    transition: fill 0.3s ease; /* Smooth transition for the fill */
+}
+
+/*
+   Note: The effectiveness of this CSS (especially 'fill') depends on how the SVG is structured.
+   If SVG elements have inline 'fill' styles, this CSS rule might need '!important'
+   or the inline styles might need to be removed from the SVG elements themselves for this to take effect.
+   For SVGs created in vector editors, elements often get explicit fill colors.
+   Using !important is a way to try and override this, but cleaner SVG structure is better.
+*/
