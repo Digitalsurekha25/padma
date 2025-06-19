@@ -9,8 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const lastSeenDiv = document.getElementById('lastSeenAnalysis');
     const repeaterSleepersDiv = document.getElementById('repeaterSleepersAnalysis');
     const distanceAnalysisDiv = document.getElementById('distanceAnalysis');
-    const basicPropsDiv = document.getElementById('basicPropsAnalysis'); // Add this selector
-    const positionalPropsDiv = document.getElementById('positionalPropsAnalysis'); // Add this selector
+    const basicPropsDiv = document.getElementById('basicPropsAnalysis');
+    const positionalPropsDiv = document.getElementById('positionalPropsAnalysis');
+    const advancedTablePropsDiv = document.getElementById('advancedTablePropsAnalysis'); // Add this selector
 
     let results = [];
     let numberCounts = {}; // Declare here
@@ -44,6 +45,84 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     // Even/Odd will be calculated directly: num % 2 === 0 (for num > 0)
     // Number 0 is generally not included in these main categories.
+
+    // Advanced Table-Based Groupings Definitions
+
+    // STREETS (Rows of 3)
+    const STREETS = {};
+    for (let i = 0; i < 12; i++) {
+        const startNum = i * 3 + 1;
+        STREETS[`Street ${startNum}-${startNum+1}-${startNum+2}`] = [startNum, startNum + 1, startNum + 2];
+    }
+    // Example: STREETS['Street 1-2-3'] = [1, 2, 3]
+
+    // LINES (Double Rows/Streets - groups of 6)
+    const LINES = {};
+    for (let i = 0; i < 6; i++) { // Corrected loop to go up to 5 (0 to 5 is 6 lines)
+        // Line 1-6, 7-12, ..., 31-36
+        // For i=0, startNum = 1. Line 1-6.
+        // For i=5, startNum = 5*6+1 = 31. Line 31-36.
+        const startNum = i * 6 + 1;
+        LINES[`Line ${startNum}-${startNum+5}`] = Array.from({length: 6}, (_, k) => startNum + k);
+    }
+    // Example: LINES['Line 1-6'] = [1, 2, 3, 4, 5, 6]
+
+    // FINALES (Numbers ending in the same digit)
+    const FINALES = {};
+    for (let i = 0; i <= 9; i++) {
+        FINALES[`Finale ${i}`] = [];
+        for (let j = i; j <= 36; j += 10) {
+            if (j === 0 && i !== 0) continue; // Only Finale 0 contains 0
+            if (j > 0 || (j === 0 && i === 0)) { // Ensure 0 is only in Finale 0
+                 FINALES[`Finale ${i}`].push(j);
+            }
+        }
+        if (FINALES[`Finale ${i}`].length === 0) {
+            delete FINALES[`Finale ${i}`];
+        }
+    }
+    // Example: FINALES['Finale 7'] = [7, 17, 27]
+    // FINALES['Finale 0'] = [0, 10, 20, 30]
+
+    // QUADS/CORNERS - Will be determined programmatically by a helper function
+    // No large static structure here, but we can define the function later.
+    // For now, just acknowledging this approach.
+    // Helper function `getQuadsForNumber(number)` will be created in a subsequent step.
+    function getQuadsForNumber(num) {
+        if (num === 0 || num > 36) return []; // 0 and invalid numbers are not in corners
+
+        const quads = [];
+        const col = (num - 1) % 3; // 0 for col 1, 1 for col 2, 2 for col 3
+        const row = Math.floor((num - 1) / 3); // 0 for row 1 (1-3), 11 for row 12 (34-36)
+
+        // Check if it can be the bottom-right number of a corner
+        // (i.e., corner is num-4, num-3, num-1, num) - corrected indices based on standard table layout.
+        // A corner involves num and its three adjacent numbers.
+        // Example for num=5:
+        // Corner 1 (top-left for 5): 5, 6, 2, 3 -> (num, num+1, num-3, num-3+1)
+        // Corner 2 (top-right for 5): 4, 5, 1, 2 -> (num-1, num, num-3-1, num-3)
+        // Corner 3 (bottom-left for 5): 8, 9, 5, 6 -> (num+3, num+3+1, num, num+1)
+        // Corner 4 (bottom-right for 5): 7, 8, 4, 5 -> (num+3-1, num+3, num-1, num)
+
+        // Top-left of a potential square (num is the top-left)
+        if (col < 2 && row < 11) { // Can form a square with num+1, num+3, num+4
+            quads.push(`Quad: ${num}, ${num+1}, ${num+3}, ${num+4}`);
+        }
+        // Top-right of a potential square (num is the top-right)
+        if (col > 0 && row < 11) { // Can form a square with num-1, num, num+2, num+3
+            quads.push(`Quad: ${num-1}, ${num}, ${num+2}, ${num+3}`);
+        }
+        // Bottom-left of a potential square (num is the bottom-left)
+        if (col < 2 && row > 0) { // Can form a square with num-3, num-2, num, num+1
+            quads.push(`Quad: ${num-3}, ${num-2}, ${num}, ${num+1}`);
+        }
+        // Bottom-right of a potential square (num is the bottom-right)
+        if (col > 0 && row > 0) { // Can form a square with num-4, num-3, num-1, num
+            quads.push(`Quad: ${num-4}, ${num-3}, ${num-1}, ${num}`);
+        }
+        return quads.sort(); // Sort for consistent display if multiple quads found
+    }
+
 
     const WHEEL_NUMBERS = {
         'Voisins du Zéro': [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25], // Corrected Voisins
@@ -288,10 +367,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Dozen
         let dozenText = 'N/A (0)';
-        for (const dozenName in DOZENS) {
-            if (currentNumber >= DOZENS[dozenName].min && currentNumber <= DOZENS[dozenName].max) {
-                dozenText = dozenName;
-                break;
+        if (currentNumber > 0) {
+            for (const dozenName in DOZENS) {
+                if (currentNumber >= DOZENS[dozenName].min && currentNumber <= DOZENS[dozenName].max) {
+                    dozenText = dozenName;
+                    break;
+                }
             }
         }
         const dozLi = document.createElement('li');
@@ -300,16 +381,101 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Column
         let columnText = 'N/A (0)';
-        for (const colName in COLUMNS) {
-            if (COLUMNS[colName].includes(currentNumber)) {
-                columnText = colName;
-                break;
+        if (currentNumber > 0) {
+            for (const colName in COLUMNS) {
+                if (COLUMNS[colName].includes(currentNumber)) {
+                    columnText = colName;
+                    break;
+                }
             }
         }
         const colLi = document.createElement('li');
         colLi.textContent = `Column: ${columnText}`;
         posList.appendChild(colLi);
         positionalContent.appendChild(posList);
+
+        // --- Advanced Table Properties ---
+        let advancedContent = advancedTablePropsDiv.querySelector('.content');
+        if (!advancedContent) {
+            advancedContent = document.createElement('div');
+            advancedContent.className = 'content';
+            const h4 = advancedTablePropsDiv.querySelector('h4');
+            if (h4 && h4.nextSibling) advancedTablePropsDiv.insertBefore(advancedContent, h4.nextSibling);
+            else if (h4) advancedTablePropsDiv.appendChild(advancedContent);
+            else advancedTablePropsDiv.appendChild(advancedContent); // Fallback
+        }
+        advancedContent.innerHTML = ''; // Clear previous
+
+        if (currentNumber === null) {
+            advancedContent.textContent = 'No number selected for analysis.';
+        } else {
+            const advList = document.createElement('ul');
+            advList.style.paddingLeft = '0'; advList.style.listStyleType = 'none';
+
+            // Street
+            let streetText = 'N/A (0 or not applicable)';
+            if (currentNumber > 0) {
+                for (const streetName in STREETS) {
+                    if (STREETS[streetName].includes(currentNumber)) {
+                        streetText = streetName;
+                        break;
+                    }
+                }
+            }
+            const streetLi = document.createElement('li');
+            streetLi.textContent = `Street: ${streetText}`;
+            advList.appendChild(streetLi);
+
+            // Line
+            let lineText = 'N/A (0 or not applicable)';
+            if (currentNumber > 0) {
+                for (const lineName in LINES) {
+                    if (LINES[lineName].includes(currentNumber)) {
+                        lineText = lineName;
+                        break;
+                    }
+                }
+            }
+            const lineLi = document.createElement('li');
+            lineLi.textContent = `Line: ${lineText}`;
+            advList.appendChild(lineLi);
+
+            // Quads/Corners
+            const quadsLi = document.createElement('li');
+            if (currentNumber > 0) {
+                const quads = getQuadsForNumber(currentNumber);
+                quadsLi.textContent = `Corners: ${quads.length > 0 ? quads.join(', ') : 'None'}`;
+            } else {
+                quadsLi.textContent = 'Corners: N/A (0)';
+            }
+            advList.appendChild(quadsLi);
+
+            // Finales
+            let finaleText = 'N/A (Special case or 0)';
+            let foundFinale = false;
+            // Finale 0 is the only one that can contain 0
+            if (FINALES[`Finale ${currentNumber % 10}`] && FINALES[`Finale ${currentNumber % 10}`].includes(currentNumber)) {
+                 finaleText = `Finale ${currentNumber % 10}`;
+                 foundFinale = true;
+            } else if (currentNumber === 0 && FINALES['Finale 0'] && FINALES['Finale 0'].includes(0)) {
+                // Explicit check for 0 if the modulo logic isn't direct for it
+                finaleText = 'Finale 0';
+                foundFinale = true;
+            }
+
+
+            if (!foundFinale && currentNumber !== null && currentNumber !== undefined) {
+                finaleText = 'None';
+            } else if (currentNumber === null || currentNumber === undefined){
+                finaleText = 'No number selected';
+            }
+
+            const finaleLi = document.createElement('li');
+            finaleLi.textContent = `Finale: ${finaleText}`;
+            advList.appendChild(finaleLi);
+
+            advancedContent.appendChild(advList);
+        }
     }
 
     function updateDistanceAnalysis() {

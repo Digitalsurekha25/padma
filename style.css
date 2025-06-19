@@ -106,12 +106,12 @@ button:hover {
 }
 
 /* Basic styling for analysis display */
-#latestNumberAnalysis p {
-    margin: 5px 0;
+#latestNumberAnalysis p { /* This will be styled by the .content p rule later for its contents */
+    /* margin: 5px 0; */ /* Handled by list item styling if it's a list */
 }
-#latestNumberAnalysis strong { /* This is for the number itself inside the "Analysis for X" */
+/* #latestNumberAnalysis strong { */ /* This is for the number itself inside the "Analysis for X" */
     /* color: #333; */ /* Covered by p:first-child strong below */
-}
+/* } */
 
 /* General styling for each analysis module/box */
 .analysis-section > div[id$="Analysis"], /* Targets main analysis divs like hitFrequencyAnalysis */
@@ -135,11 +135,6 @@ button:hover {
     border-bottom: 1px solid #ddd;
     padding-bottom: 5px;
 }
-/* Specific for latestNumberAnalysis if it doesn't have an H4 - now it does */
-.analysis-section #latestNumberAnalysis {
-    /* This already gets box styling from the rule above */
-}
-
 
 /* Styling for H5 sub-titles (e.g., Repeaters, Sleepers) */
 .analysis-section h5 { /* General for H5, or use specific classes if created */
@@ -156,7 +151,7 @@ button:hover {
 }
 
 /* Styling for lists within analysis sections (statistical ones) */
-.analysis-section > div[id$="Analysis"] .content ul,
+.analysis-section > div[id$="Analysis"]:not(#latestNumberAnalysis):not(#tableGroupAnalysisContainer) .content ul,
 .analysis-section .repeaters-section .content ul,
 .analysis-section .sleepers-section .content ul {
     list-style-type: none;
@@ -171,14 +166,14 @@ button:hover {
     border-radius: 3px;
 }
 
-.analysis-section > div[id$="Analysis"] .content ul li,
+.analysis-section > div[id$="Analysis"]:not(#latestNumberAnalysis):not(#tableGroupAnalysisContainer) .content ul li,
 .analysis-section .repeaters-section .content ul li,
 .analysis-section .sleepers-section .content ul li {
     padding: 3px 5px;
     border-bottom: 1px dotted #f0f0f0;
 }
 
-.analysis-section > div[id$="Analysis"] .content ul li:last-child,
+.analysis-section > div[id$="Analysis"]:not(#latestNumberAnalysis):not(#tableGroupAnalysisContainer) .content ul li:last-child,
 .analysis-section .repeaters-section .content ul li:last-child,
 .analysis-section .sleepers-section .content ul li:last-child {
     border-bottom: none;
@@ -193,7 +188,7 @@ button:hover {
 }
 
 /* Clearer message styling for "no data", etc. in statistical sections */
-.analysis-section > div[id$="Analysis"] .content p:not([style*="color: green"]),
+.analysis-section > div[id$="Analysis"]:not(#latestNumberAnalysis):not(#tableGroupAnalysisContainer) .content p:not([style*="color: green"]),
 .analysis-section .repeaters-section .content p:not([style*="color: green"]),
 .analysis-section .sleepers-section .content p:not([style*="color: green"]) {
     font-style: italic;
@@ -202,14 +197,20 @@ button:hover {
 }
 
 /* Styling for #latestNumberAnalysis content (wheel groups) */
-.analysis-section #latestNumberAnalysis .content p {
+/* This div now has an H4, and its content is paragraphs. */
+.analysis-section #latestNumberAnalysis p { /* Paragraphs directly inside #latestNumberAnalysis if no .content div is used by JS */
     font-size: 0.9em;
     padding: 3px 0;
-    margin: 2px 0; /* Tighter margin for these specific paragraphs */
-    color: #333; /* Ensure text color if not inherited properly */
+    margin: 2px 5px; /* Add left margin to align with other .content areas */
+    color: #333;
 }
-.analysis-section #latestNumberAnalysis .content p strong{
-    color: #111; /* Darker for the number itself */
+.analysis-section #latestNumberAnalysis p strong{ /* The number in "Analysis for X:" */
+    /* The "Analysis for X:" itself is now part of H4 if modified in JS, or first-child p */
+     color: #111;
+}
+/* If the first p is still the title: */
+.analysis-section #latestNumberAnalysis > p:first-child {
+    /* This styling might conflict if H4 is used. Assume H4 is used for title now. */
 }
 
 
@@ -226,7 +227,8 @@ button:hover {
 
 /* Styling for sub-sections like basicPropsAnalysis and positionalPropsAnalysis */
 #basicPropsAnalysis,
-#positionalPropsAnalysis {
+#positionalPropsAnalysis,
+#advancedTablePropsAnalysis { /* Added new section here */
     margin-top: 10px;
     padding: 10px;
     background-color: #fdfdff; /* Slightly lighter than container */
@@ -235,9 +237,14 @@ button:hover {
 }
 
 #basicPropsAnalysis:first-child,
-#positionalPropsAnalysis:first-child {
+#positionalPropsAnalysis:first-child { /* This rule might need adjustment if advanced is first */
     margin-top: 0; /* First sub-section doesn't need top margin */
 }
+/* Ensure advancedTablePropsAnalysis also has no top margin if it's the first visible one */
+#advancedTablePropsAnalysis:first-child {
+    margin-top: 0;
+}
+
 
 #tableGroupAnalysisContainer h4 {
     margin-top: 0;
@@ -248,9 +255,10 @@ button:hover {
     padding-bottom: 4px;
 }
 
-/* Styling for the lists within basicProps and positionalProps */
+/* Styling for the lists within basicProps, positionalProps, and advancedTableProps */
 #basicPropsAnalysis .content ul,
-#positionalPropsAnalysis .content ul {
+#positionalPropsAnalysis .content ul,
+#advancedTablePropsAnalysis .content ul {
     list-style-type: none;
     padding-left: 0;
     margin-top: 5px;
@@ -260,24 +268,33 @@ button:hover {
 }
 
 #basicPropsAnalysis .content ul li,
-#positionalPropsAnalysis .content ul li {
+#positionalPropsAnalysis .content ul li,
+#advancedTablePropsAnalysis .content ul li {
     padding: 4px 0; /* Vertical padding for list items */
     border-bottom: 1px dashed #f0f0f5; /* Lighter dashed border */
 }
 
 #basicPropsAnalysis .content ul li:last-child,
-#positionalPropsAnalysis .content ul li:last-child {
+#positionalPropsAnalysis .content ul li:last-child,
+#advancedTablePropsAnalysis .content ul li:last-child {
     border-bottom: none;
 }
 
 /* Ensure .content div within these sections has some padding if not already inherited */
 #basicPropsAnalysis .content,
-#positionalPropsAnalysis .content {
+#positionalPropsAnalysis .content,
+#advancedTablePropsAnalysis .content {
     padding-left: 5px; /* Small indent for content under H4 */
 }
-/* Message styling within table group analysis */
-#tableGroupAnalysisContainer .content { /* General content text if not a list */
+
+/* Message styling within table group analysis sections */
+#tableGroupAnalysisContainer .content { /* General content text if not a list (e.g. "No number selected") */
     font-style: italic;
     color: #666;
-    padding: 5px;
+    padding: 5px; /* Ensure padding for these messages */
+}
+#tableGroupAnalysisContainer #basicPropsAnalysis .content,
+#tableGroupAnalysisContainer #positionalPropsAnalysis .content,
+#tableGroupAnalysisContainer #advancedTablePropsAnalysis .content {
+     /* This will apply to the specific content divs if they only contain a text node message */
 }
